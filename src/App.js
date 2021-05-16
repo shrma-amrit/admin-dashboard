@@ -1,24 +1,14 @@
-import React, { useState } from 'react';
-
-import NewEmployee from './components/NewEmployee/NewEmployee';
-import Employees from './components/Employees/Employees';
+// App.js
+import React from 'react';
+import './App.css';
+import PaginationTableComponent from './components/pagination.table';
 
 const App = () => {
-  const [employees, setEmployees] = useState([]);
-
-  const addEmployeeHandler = (employee) => {
-    debugger;
-    setEmployees((prevEmployees) => {
-      return [employee, ...prevEmployees];
-    });
-  };
-
   return (
-    <div>
-      <NewEmployee onAddEmployee={addEmployeeHandler} />
-      <Employees employees={employees} />
+    <div className="App">
+      <PaginationTableComponent />
     </div>
   );
-};
+}
 
 export default App;
