@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/admin-dashboard/static/css/main.6605bfe1.chunk.css",
+    "main.js": "/admin-dashboard/static/js/main.95bdfdd7.chunk.js",
+    "main.js.map": "/admin-dashboard/static/js/main.95bdfdd7.chunk.js.map",
+    "runtime-main.js": "/admin-dashboard/static/js/runtime-main.49b439ae.js",
+    "runtime-main.js.map": "/admin-dashboard/static/js/runtime-main.49b439ae.js.map",
+    "static/css/2.9233ae65.chunk.css": "/admin-dashboard/static/css/2.9233ae65.chunk.css",
+    "static/js/2.7a284098.chunk.js": "/admin-dashboard/static/js/2.7a284098.chunk.js",
+    "static/js/2.7a284098.chunk.js.map": "/admin-dashboard/static/js/2.7a284098.chunk.js.map",
+    "index.html": "/admin-dashboard/index.html",
+    "precache-manifest.6c401be0fab6693349621b8f878003af.js": "/admin-dashboard/precache-manifest.6c401be0fab6693349621b8f878003af.js",
+    "service-worker.js": "/admin-dashboard/service-worker.js",
+    "static/css/2.9233ae65.chunk.css.map": "/admin-dashboard/static/css/2.9233ae65.chunk.css.map",
+    "static/css/main.6605bfe1.chunk.css.map": "/admin-dashboard/static/css/main.6605bfe1.chunk.css.map",
+    "static/js/2.7a284098.chunk.js.LICENSE.txt": "/admin-dashboard/static/js/2.7a284098.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.49b439ae.js",
+    "static/css/2.9233ae65.chunk.css",
+    "static/js/2.7a284098.chunk.js",
+    "static/css/main.6605bfe1.chunk.css",
+    "static/js/main.95bdfdd7.chunk.js"
+  ]
+}
