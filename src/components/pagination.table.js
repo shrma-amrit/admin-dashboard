@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
+import moment from 'moment';
 
-import { useTable, usePagination, useSortBy, useFilters, useGlobalFilter, useAsyncDebounce } from 'react-table';
+import { useTable, usePagination, useSortBy, useGlobalFilter, useAsyncDebounce } from 'react-table';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { getAllEmployees, getEmployeeById, deleteEmployee, editEmployee, addEmployee } from '../utils';
 import { Button, Col, Container, Row, Modal, Form } from 'react-bootstrap';
@@ -111,24 +112,24 @@ const Table = ({ columns, data }) => {
           <Col xs={12} md={12} lg={12}>
             <ul className="pagination">
               <li className="page-item" onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-                <a className="page-link">First</a>
+                <button className="page-link">First</button>
               </li>
               <li className="page-item" onClick={() => previousPage()} disabled={!canPreviousPage}>
-                <a className="page-link">{'<'}</a>
+                <button className="page-link">{'<'}</button>
               </li>
               <li className="page-item" onClick={() => nextPage()} disabled={!canNextPage}>
-                <a className="page-link">{'>'}</a>
+                <button className="page-link">{'>'}</button>
               </li>
               <li className="page-item" onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-                <a className="page-link">Last</a>
+                <button className="page-link">Last</button>
               </li>
               <li>
-                <a className="page-link">
+                <button className="page-link">
                   Page{' '}
                   <strong>
                     {pageIndex + 1} of {pageOptions.length}
                   </strong>{' '}
-                </a>
+                </button>
               </li>
 
               <select
@@ -161,7 +162,7 @@ const PaginationTableComponent = () => {
   const [enteredEmail, setEnteredEmail] = useState('');
   const [enteredSalary, setEnteredSalary] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [errorMessages, setErrorMessages] = useState([]);
+  const [, setErrorMessages] = useState([]);
   const [formType, setFormType] = useState('add');
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [allEmployeesData, setAllEmployeesData] = useState([]);
@@ -227,7 +228,7 @@ const PaginationTableComponent = () => {
       await addEmployee(employeeData);
       await getAllEmployeeDataHandler();
     } else { //edit form functionality
-      await editEmployee({ id: selectedEmployee , ...employeeData })
+      await editEmployee({ id: selectedEmployee, ...employeeData })
     }
 
     setShowModal(false);
@@ -249,28 +250,6 @@ const PaginationTableComponent = () => {
     setErrorMessages(prevState => {
       return [...prevState, message]
     });
-  }
-
-  const editFormHandler = async (empId) => {
-    const employee = await getEmployeeById({id: empId})
-    setFormType('edit');
-    setSelectedEmployee(employee.id);
-    setShowModal(true);
-
-    // one employee data fetch API call
-
-    // Change states as per the response
-    setEnteredName(employee.name);
-    setEnteredSalary(employee.salary);
-    setEnteredPhone(employee.phone);
-    setEnteredEmail(employee.email);
-    setSelectedDepartment(employee.department);
-  }
-
-  const deleteFormHandler = async (empId) => {
-    // delete API call
-    await deleteEmployee({ id: empId })
-    await getAllEmployeeDataHandler();
   }
 
   const getAllEmployeeDataHandler = async () => {
@@ -295,121 +274,97 @@ const PaginationTableComponent = () => {
   ];
 
   const columns = React.useMemo(
-    () => [
-      {
-        Header: 'Employees Information',
-        columns: [
-          {
-            Header: 'Name',
-            accessor: 'name',
-          },
-          {
-            Header: 'Phone',
-            accessor: 'phone',
-          },
-          {
-            Header: 'Email',
-            accessor: 'email',
-            disableGlobalFilter: true
-          },
-          {
-            Header: 'Department',
-            accessor: 'department',
-          },
-          {
-            Header: 'Salary',
-            accessor: 'salary',
-            disableGlobalFilter: true
-          },
-          {
-            Header: 'Actions',
-            accessor: 'actions',
-            disableGlobalFilter: true,
-            disableSorting: true,
-            Cell: ({ row: { original } }) => {
-              return (
-                <>
-                  <Button
-                    variant="primary"
-                    onClick={() => editFormHandler(original.id)}
-                  >
-                    Edit
+    () => {
+      const editFormHandler = async (empId) => {
+        const employee = await getEmployeeById({ id: empId })
+        setFormType('edit');
+        setSelectedEmployee(employee.id);
+        setShowModal(true);
+
+        // one employee data fetch API call
+
+        // Change states as per the response
+        setEnteredName(employee.name);
+        setEnteredSalary(employee.salary);
+        setEnteredPhone(employee.phone);
+        setEnteredEmail(employee.email);
+        setSelectedDepartment(employee.department);
+      }
+
+      const deleteFormHandler = async (empId) => {
+        // delete API call
+        await deleteEmployee({ id: empId })
+        await getAllEmployeeDataHandler();
+      }
+
+      return [
+        {
+          Header: 'Employees Information',
+          columns: [
+            {
+              Header: 'Date of joining',
+              accessor: 'doj',
+              Cell: ({ row: { original } }) => {
+                return (
+                  <>
+                    {moment(original.doj).format('MM/DD/YYYY')}
+                  </>
+                )
+              },
+            },
+            {
+              Header: 'Name',
+              accessor: 'name',
+            },
+            {
+              Header: 'Phone',
+              accessor: 'phone',
+            },
+            {
+              Header: 'Email',
+              accessor: 'email',
+              disableGlobalFilter: true
+            },
+            {
+              Header: 'Department',
+              accessor: 'department',
+            },
+            {
+              Header: 'Salary',
+              accessor: 'salary',
+              disableGlobalFilter: true
+            },
+            {
+              Header: 'Actions',
+              accessor: 'actions',
+              disableGlobalFilter: true,
+              disableSorting: true,
+              Cell: ({ row: { original } }) => {
+                return (
+                  <>
+                    <Button
+                      variant="primary"
+                      onClick={() => editFormHandler(original.id)}
+                    >
+                      Edit
                   </Button>
 
-                  <Button
-                    variant="danger"
-                    style={{ marginLeft: '10px' }}
-                    onClick={() => deleteFormHandler(original.id)}
-                  >Delete</Button>
-                </>
-              )
-            },
-            getProps: () => ({ someFunc: () => alert("clicked") })
-          }
-        ],
-      }
-    ],
+                    <Button
+                      variant="danger"
+                      style={{ marginLeft: '10px' }}
+                      onClick={() => deleteFormHandler(original.id)}
+                    >Delete</Button>
+                  </>
+                )
+              },
+              getProps: () => ({ someFunc: () => alert("clicked") })
+            }
+          ],
+        }
+      ]
+    },
     []
   )
-
-  const data = [
-    {
-      "name": "AMD",
-      "phone": "9980242342",
-      "email": "a@a.com",
-      "department": "",
-      "salary": 1000,
-      "status": "Active"
-    },
-    {
-      "name": "Am S",
-      "phone": "9980242342",
-      "email": "a@a.com",
-      "department": "",
-      "salary": 1000,
-      "status": "Active"
-    },
-    {
-      "name": "Abh P",
-      "phone": "9980242342",
-      "email": "a@a.com",
-      "department": "",
-      "salary": 1000,
-      "status": "Active"
-    },
-    {
-      "name": "Ani K",
-      "phone": "9980242992",
-      "email": "a@a.com",
-      "department": "",
-      "salary": 1000,
-      "status": "Active"
-    },
-    {
-      "name": "Ank R",
-      "phone": "9980266342",
-      "email": "a@a.com",
-      "department": "",
-      "salary": 1000,
-      "status": "Active"
-    },
-    {
-      "name": "Ayu D",
-      "phone": "9980242342",
-      "email": "a@a.com",
-      "department": "",
-      "salary": 1000,
-      "status": "Active"
-    },
-    {
-      "name": "Ski C",
-      "phone": "9980242342",
-      "email": "a@a.com",
-      "department": "",
-      "salary": 1000,
-      "status": "Active"
-    },
-  ]
 
   return (
     <>
@@ -421,6 +376,7 @@ const PaginationTableComponent = () => {
               style={{ float: "right" }}
               onClick={() => {
                 emptyForm();
+                setFormType('add');
                 setShowModal(true);
               }}
             >
@@ -499,7 +455,6 @@ const PaginationTableComponent = () => {
                       <Form.Group>
                         <Form.Label>Salary*</Form.Label>
                         <Form.Control
-                          type='number'
                           type='number'
                           min='1000'
                           step='1000'
