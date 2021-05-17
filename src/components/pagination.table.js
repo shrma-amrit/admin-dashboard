@@ -4,7 +4,7 @@ import moment from 'moment';
 import { useTable, usePagination, useSortBy, useGlobalFilter, useAsyncDebounce } from 'react-table';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { getAllEmployees, getEmployeeById, deleteEmployee, editEmployee, addEmployee } from '../utils';
-import { Button, Col, Container, Row, Modal, Form } from 'react-bootstrap';
+import { Button, Col, Container, Row, Modal, Form, Alert } from 'react-bootstrap';
 
 const GlobalFilter = ({
   preGlobalFilteredRows,
@@ -44,8 +44,6 @@ const Table = ({ columns, data }) => {
     canPreviousPage,
     canNextPage,
     pageOptions,
-    pageCount,
-    gotoPage,
     nextPage,
     previousPage,
     setPageSize,
@@ -64,8 +62,8 @@ const Table = ({ columns, data }) => {
   )
 
   return (
-    <div>
-      <Container>
+    <>
+      <Container fluid>
         <Row>
           <Col xs={12} md={12} lg={12}>
             <GlobalFilter
@@ -75,59 +73,55 @@ const Table = ({ columns, data }) => {
             />
           </Col>
           <Col xs={12} md={12} lg={12}>
-            <table className="table" {...getTableProps()}>
-              <thead>
-                {headerGroups.map(headerGroup => (
-                  <tr {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map(column => (
-                      <th {...column.getHeaderProps(column.getSortByToggleProps())}>
-                        {column.render('Header')}
-
-                        <span>
-                          {column.isSorted
-                            ? column.isSortedDesc
-                              ? ' 🔽'
-                              : ' 🔼'
-                            : ''}
-                        </span>
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody {...getTableBodyProps()}>
-                {page.map((row, i) => {
-                  prepareRow(row)
-                  return (
-                    <tr {...row.getRowProps()}>
-                      {row.cells.map(cell => {
-                        return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                      })}
+            <div className="table-responsive">
+              <table className="table" {...getTableProps()}>
+                <thead>
+                  {headerGroups.map(headerGroup => (
+                    <tr {...headerGroup.getHeaderGroupProps()}>
+                      {headerGroup.headers.map(column => (
+                        <th {...column.getHeaderProps(column.getSortByToggleProps())}>
+                          {column.render('Header')}
+                          <span>
+                            {column.isSorted
+                              ? column.isSortedDesc
+                                ? ' 🔽'
+                                : ' 🔼'
+                              : ''}
+                          </span>
+                        </th>
+                      ))}
                     </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                  ))}
+                </thead>
+                <tbody {...getTableBodyProps()}>
+                  {page.map((row, i) => {
+                    prepareRow(row)
+                    return (
+                      <tr {...row.getRowProps()}>
+                        {row.cells.map(cell => {
+                          return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                        })}
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+
+            </div>
           </Col>
           <Col xs={12} md={12} lg={12}>
             <ul className="pagination">
-              <li className="page-item" onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-                <button className="page-link">First</button>
-              </li>
               <li className="page-item" onClick={() => previousPage()} disabled={!canPreviousPage}>
                 <button className="page-link">{'<'}</button>
               </li>
               <li className="page-item" onClick={() => nextPage()} disabled={!canNextPage}>
                 <button className="page-link">{'>'}</button>
               </li>
-              <li className="page-item" onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-                <button className="page-link">Last</button>
-              </li>
               <li>
-                <button className="page-link">
-                  Page{' '}
+                <button className="page-link" style={{ width: '85px' }}>
+                  {' '}
                   <strong>
-                    {pageIndex + 1} of {pageOptions.length}
+                    {pageIndex + 1} / {pageOptions.length}
                   </strong>{' '}
                 </button>
               </li>
@@ -150,7 +144,7 @@ const Table = ({ columns, data }) => {
           </Col>
         </Row>
       </Container>
-    </div >
+    </>
   )
 }
 
@@ -162,10 +156,12 @@ const PaginationTableComponent = () => {
   const [enteredEmail, setEnteredEmail] = useState('');
   const [enteredSalary, setEnteredSalary] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [, setErrorMessages] = useState([]);
+  const [errorMessages, setErrorMessages] = useState([]);
   const [formType, setFormType] = useState('add');
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [allEmployeesData, setAllEmployeesData] = useState([]);
+
+  let validationErrs = [];
 
   const titleChangeHandler = (event) => {
     setEnteredName(event.target.value);
@@ -188,53 +184,59 @@ const PaginationTableComponent = () => {
   }
 
   const submitHandler = async (event) => {
-    event.preventDefault();
-    setErrorMessages([]);
-    if (enteredName === undefined || enteredName.trim().length === 0) {
-      updateErrorMessages('Name is required.');
-    }
-    if (enteredEmail === undefined || enteredEmail.trim().length === 0) {
-      updateErrorMessages('Email is required.');
-    }
-    if (enteredPhone === undefined || enteredPhone.trim().length === 0) {
-      updateErrorMessages('Phone is required.');
-    }
-    if (selectedDepartment === undefined || selectedDepartment.trim().length === 0) {
-      updateErrorMessages('Department is required.');
-    }
-    if (enteredSalary === undefined || enteredSalary === 0) {
-      updateErrorMessages('Salary is required.');
-    }
+    try {
+      event.preventDefault();
+      validationErrs = [];
+      if (enteredName === undefined || enteredName.trim().length === 0) {
+        validationErrs.push('Name is required.')
+      }
+      if (enteredEmail === undefined || enteredEmail.trim().length === 0) {
+        validationErrs.push('Email is required.')
+      }
+      if (enteredPhone === undefined || enteredPhone.trim().length === 0) {
+        validationErrs.push('Phone is required.')
+      }
+      if (selectedDepartment === undefined || selectedDepartment.trim().length === 0) {
+        validationErrs.push('Department is required.')
+      }
+      if (enteredSalary === undefined || enteredSalary === '') {
+        validationErrs.push('Salary is required.')
+      }
 
-    if (enteredName === undefined || enteredName.trim().length === 0 ||
-      enteredEmail === undefined || enteredEmail.trim().length === 0 ||
-      enteredPhone === undefined || enteredPhone.trim().length === 0 ||
-      selectedDepartment === undefined || selectedDepartment.trim().length === 0 ||
-      enteredSalary === undefined || enteredSalary === 0
-    ) {
-      return false;
+      debugger;
+      setErrorMessages(validationErrs);
+      if (enteredName === undefined || enteredName.trim().length === 0 ||
+        enteredEmail === undefined || enteredEmail.trim().length === 0 ||
+        enteredPhone === undefined || enteredPhone.trim().length === 0 ||
+        selectedDepartment === undefined || selectedDepartment.trim().length === 0 ||
+        enteredSalary === undefined || enteredSalary === ''
+      ) {
+        return;
+      }
+
+      const employeeData = {
+        name: enteredName,
+        salary: enteredSalary,
+        phone: enteredPhone,
+        email: enteredEmail,
+        date: new Date(),
+        department: selectedDepartment
+      };
+
+      if (formType === 'add') {
+        await addEmployee(employeeData);
+        await getAllEmployeeDataHandler();
+      } else { //edit form functionality
+        await editEmployee({ id: selectedEmployee, ...employeeData })
+      }
+
+      setShowModal(false);
+
+      // props.onSaveEmployeeData(employeeData);
+      emptyForm();
+    } catch (err) {
+      setErrorMessages([err.message]);
     }
-
-    const employeeData = {
-      name: enteredName,
-      salary: enteredSalary,
-      phone: enteredPhone,
-      email: enteredEmail,
-      date: new Date(),
-      department: selectedDepartment
-    };
-
-    if (formType === 'add') {
-      await addEmployee(employeeData);
-      await getAllEmployeeDataHandler();
-    } else { //edit form functionality
-      await editEmployee({ id: selectedEmployee, ...employeeData })
-    }
-
-    setShowModal(false);
-
-    // props.onSaveEmployeeData(employeeData);
-    emptyForm();
   };
 
   const emptyForm = () => {
@@ -243,14 +245,15 @@ const PaginationTableComponent = () => {
     setEnteredPhone('');
     setEnteredEmail('');
     setSelectedDepartment('');
-    setSelectedEmployee('');
+    // setSelectedEmployee('');
   }
 
-  const updateErrorMessages = (message) => {
-    setErrorMessages(prevState => {
-      return [...prevState, message]
-    });
-  }
+  // const updateErrorMessages = (message) => {
+  //   setErrorMessages(prevState => {
+  //     debugger;
+  //     return [...prevState, message]
+  //   });
+  // }
 
   const getAllEmployeeDataHandler = async () => {
     // run API to fetch all employees
@@ -348,10 +351,10 @@ const PaginationTableComponent = () => {
                     >
                       Edit
                   </Button>
-
+                    <br />
                     <Button
                       variant="danger"
-                      style={{ marginLeft: '10px' }}
+                      style={{ marginTop: '5px' }}
                       onClick={() => deleteFormHandler(original.id)}
                     >Delete</Button>
                   </>
@@ -368,7 +371,7 @@ const PaginationTableComponent = () => {
 
   return (
     <>
-      <Container>
+      <Container fluid>
         <Row>
           <Col xs={12} md={12} lg={12}>
             <Button
@@ -384,7 +387,7 @@ const PaginationTableComponent = () => {
               </Button>
           </Col>
           <Col xs={12} md={12} lg={12}>
-            {allEmployeesData && allEmployeesData.length ? <Table columns={columns} data={allEmployeesData} /> : ''}
+            {allEmployeesData && allEmployeesData.length ? <Table className="table-responsive" columns={columns} data={allEmployeesData} /> : ''}
           </Col>
         </Row>
       </Container>
@@ -396,7 +399,7 @@ const PaginationTableComponent = () => {
                 <Modal.Title>Employee Details Form</Modal.Title>
               </Modal.Header>
               <Modal.Body>
-                <Container>
+                <Container fluid>
                   <Row>
                     <Col xs={12} md={6} lg={4}>
                       <Form.Group>
@@ -480,6 +483,17 @@ const PaginationTableComponent = () => {
             </form>
           </Modal>
           : ''
+      }
+      {
+        errorMessages.length > 0 ?
+          <Alert variant="danger" onClose={() => setErrorMessages([])} dismissible>
+            <Alert.Heading>Oh snap! You got an error!</Alert.Heading>
+            {
+              errorMessages.map((err) => {
+                return <p key={err}>{err}</p>
+              })
+            }
+          </Alert> : ''
       }
     </>
   )
